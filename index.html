@@ -11,6 +11,16 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
+    <style>
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
   </head>
   <body>
     <!-- Countdown Only Section (shown until July 23rd) -->
@@ -131,7 +141,43 @@
 
           <!-- Slideshow Container -->
           <div class="slideshow-container">
-            <div class="slideshow-wrapper">
+            <!-- Loading indicator -->
+            <div
+              id="slideshow-loading"
+              class="slideshow-loading"
+              style="
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                height: 400px;
+                background: rgba(0, 0, 0, 0.1);
+                border-radius: 15px;
+                margin-bottom: 2rem;
+              "
+            >
+              <div style="text-align: center">
+                <div
+                  style="
+                    width: 40px;
+                    height: 40px;
+                    border: 3px solid rgba(255, 255, 255, 0.3);
+                    border-top: 3px solid white;
+                    border-radius: 50%;
+                    animation: spin 1s linear infinite;
+                    margin: 0 auto 1rem;
+                  "
+                ></div>
+                <p style="color: rgba(255, 255, 255, 0.8); margin: 0">
+                  Loading photos...
+                </p>
+              </div>
+            </div>
+
+            <div
+              class="slideshow-wrapper"
+              id="slideshow-wrapper"
+              style="display: none"
+            >
               <img id="slideshow-image" src="" alt="Our memories" />
               <div class="image-overlay">
                 <div class="image-info">
@@ -381,6 +427,14 @@
 
         async init() {
           await this.loadPhotos();
+
+          // Hide loading indicator and show slideshow
+          const loadingEl = document.getElementById("slideshow-loading");
+          const wrapperEl = document.getElementById("slideshow-wrapper");
+
+          if (loadingEl) loadingEl.style.display = "none";
+          if (wrapperEl) wrapperEl.style.display = "block";
+
           this.setupEventListeners();
           if (this.photos.length > 0) {
             this.showImage(0);
@@ -404,16 +458,43 @@
             "11.jpg",
           ];
 
-          // Load all images directly - they should exist
+          // Preload all images for faster navigation
+          const preloadPromises = [];
+
           imageFiles.forEach((filename, index) => {
             const imagePath = `photos/${filename}`;
             const imageNumber = filename.match(/\d+/)[0];
-            this.photos.push({
+
+            // Create the photo object
+            const photoObj = {
               src: imagePath,
               title: `Memory ${imageNumber}`,
               alt: `Photo ${imageNumber}`,
+            };
+
+            this.photos.push(photoObj);
+
+            // Preload the image in the background
+            const preloadPromise = new Promise((resolve) => {
+              const img = new Image();
+              img.onload = () => {
+                console.log(`Preloaded: ${filename}`);
+                resolve();
+              };
+              img.onerror = () => {
+                console.warn(`Failed to preload: ${filename}`);
+                resolve(); // Still resolve to not block other images
+              };
+              img.src = imagePath;
             });
+
+            preloadPromises.push(preloadPromise);
           });
+
+          // Wait for all images to preload
+          console.log("Starting to preload all images...");
+          await Promise.all(preloadPromises);
+          console.log("All images preloaded successfully!");
 
           console.log(`Loaded ${this.photos.length} photos:`, this.photos);
 
