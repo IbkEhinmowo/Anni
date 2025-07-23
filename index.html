@@ -16,6 +16,23 @@
     <!-- Countdown Only Section (shown until July 23rd) -->
     <section id="countdown-only" class="countdown-only-section">
       <div class="countdown-only-content">
+        <!-- Happy Cat GIF above the timer -->
+        <div
+          class="cat-container"
+          style="text-align: center; margin-bottom: 20px"
+        >
+          <img
+            src="https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExbDl2dWRudWZ1eGRmb2h3Z2JwZmE2Mzk1c2h6eWJheDE4b3AwcTdrZyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/1FkCqpyObTuo0/giphy.gif"
+            alt="Happy Cat"
+            style="
+              width: 120px;
+              height: 120px;
+              border-radius: 50%;
+              box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+            "
+          />
+        </div>
+
         <h1 class="countdown-only-title">Our Special Day is Coming</h1>
         <div class="countdown-only-timer">
           <div class="countdown-display">
@@ -49,6 +66,23 @@
       <!-- Hero Section -->
       <section class="hero">
         <div class="hero-content">
+          <!-- Happy Cat GIF above the countdown -->
+          <div
+            class="cat-container"
+            style="text-align: center; margin-bottom: 20px"
+          >
+            <img
+              src="https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExbDl2dWRudWZ1eGRmb2h3Z2JwZmE2Mzk1c2h6eWJheDE4b3AwcTdrZyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/1FkCqpyObTuo0/giphy.gif"
+              alt="Happy Cat"
+              style="
+                width: 120px;
+                height: 120px;
+                border-radius: 50%;
+                box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+              "
+            />
+          </div>
+
           <div class="hero-countdown">
             <div class="countdown-display">
               <div class="countdown-item">
@@ -159,7 +193,7 @@
 
     <script>
       // DEBUG MODE: Set to true to force show main content, false to force show countdown
-      const DEBUG_SHOW_MAIN_CONTENT = false; // Change this to test different views
+      const DEBUG_SHOW_MAIN_CONTENT = true; // Change this to test different views
 
       // Page visibility and countdown management
       function checkDateAndShowContent() {
@@ -198,9 +232,14 @@
           mainContent.classList.remove("main-content-hidden");
           mainContent.classList.add("main-content-visible");
 
-          // Initialize slideshow after revealing content
+          // Initialize slideshow after revealing content (only once)
           setTimeout(() => {
-            new PhotoSlideshow();
+            if (!window.currentSlideshow) {
+              console.log("Initializing new slideshow");
+              new PhotoSlideshow();
+            } else {
+              console.log("Slideshow already exists");
+            }
           }, 500);
 
           return { showCountdownOnly: false, nextAnniversary };
@@ -325,8 +364,18 @@
       // Slideshow functionality
       class PhotoSlideshow {
         constructor() {
+          // Prevent multiple instances
+          if (window.currentSlideshow) {
+            console.log(
+              "Slideshow already exists, returning existing instance"
+            );
+            return window.currentSlideshow;
+          }
+
           this.photos = [];
           this.currentIndex = 0;
+          this.keyboardListenerAdded = false;
+          window.currentSlideshow = this;
           this.init();
         }
 
@@ -340,48 +389,33 @@
         }
 
         async loadPhotos() {
-          // Common image extensions
-          const extensions = ["jpg", "jpeg", "png", "gif", "webp"];
+          // Your actual image files with correct extensions
+          const imageFiles = [
+            "1.jpeg",
+            "2.jpeg",
+            "3.JPG",
+            "4.jpeg",
+            "5.JPG",
+            "6.jpeg",
+            "7.jpeg",
+            "8.jpeg",
+            "9.jpeg",
+            "10.jpg",
+            "11.jpg",
+          ];
 
-          // Try to load images from 1.jpg to 20.jpg (you can adjust the range)
-          for (let i = 1; i <= 20; i++) {
-            for (const ext of extensions) {
-              const imagePath = `photos/${i}.${ext}`;
-              if (await this.imageExists(imagePath)) {
-                this.photos.push({
-                  src: imagePath,
-                  title: `Memory ${i}`,
-                  alt: `Photo ${i}`,
-                });
-                break; // Found image with this number, move to next
-              }
-            }
-          }
+          // Load all images directly - they should exist
+          imageFiles.forEach((filename, index) => {
+            const imagePath = `photos/${filename}`;
+            const imageNumber = filename.match(/\d+/)[0];
+            this.photos.push({
+              src: imagePath,
+              title: `Memory ${imageNumber}`,
+              alt: `Photo ${imageNumber}`,
+            });
+          });
 
-          // If no numbered images found, try common names
-          if (this.photos.length === 0) {
-            const commonNames = [
-              "photo1",
-              "photo2",
-              "photo3",
-              "image1",
-              "image2",
-              "image3",
-            ];
-            for (const name of commonNames) {
-              for (const ext of extensions) {
-                const imagePath = `photos/${name}.${ext}`;
-                if (await this.imageExists(imagePath)) {
-                  this.photos.push({
-                    src: imagePath,
-                    title: name.charAt(0).toUpperCase() + name.slice(1),
-                    alt: name,
-                  });
-                  break;
-                }
-              }
-            }
-          }
+          console.log(`Loaded ${this.photos.length} photos:`, this.photos);
 
           // Fallback if no images found
           if (this.photos.length === 0) {
@@ -408,22 +442,53 @@
           const prevBtn = document.getElementById("prev-btn");
           const nextBtn = document.getElementById("next-btn");
 
-          prevBtn.addEventListener("click", () => this.previousImage());
-          nextBtn.addEventListener("click", () => this.nextImage());
+          // Remove any existing event listeners first
+          prevBtn.replaceWith(prevBtn.cloneNode(true));
+          nextBtn.replaceWith(nextBtn.cloneNode(true));
 
-          // Keyboard navigation
-          document.addEventListener("keydown", (e) => {
-            if (e.key === "ArrowLeft") this.previousImage();
-            if (e.key === "ArrowRight") this.nextImage();
+          // Get the new elements after cloning
+          const newPrevBtn = document.getElementById("prev-btn");
+          const newNextBtn = document.getElementById("next-btn");
+
+          newPrevBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this.previousImage();
           });
 
-          // Click to advance
-          const slideImage = document.getElementById("slideshow-image");
-          slideImage.addEventListener("click", () => this.nextImage());
+          newNextBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this.nextImage();
+          });
+
+          // Keyboard navigation - only add once
+          if (!this.keyboardListenerAdded) {
+            document.addEventListener("keydown", (e) => {
+              if (e.key === "ArrowLeft") {
+                e.preventDefault();
+                this.previousImage();
+              }
+              if (e.key === "ArrowRight") {
+                e.preventDefault();
+                this.nextImage();
+              }
+            });
+            this.keyboardListenerAdded = true;
+          }
+
+          // Remove click to advance feature as it might be causing conflicts
+          // const slideImage = document.getElementById("slideshow-image");
+          // slideImage.addEventListener("click", () => this.nextImage());
         }
 
         showImage(index) {
           if (this.photos.length === 0) return;
+
+          console.log(
+            `Showing image ${index} of ${this.photos.length} total photos`
+          );
+          console.log(`Current photo:`, this.photos[index]);
 
           this.currentIndex = index;
           const photo = this.photos[index];
@@ -441,13 +506,21 @@
         }
 
         nextImage() {
+          console.log(
+            `Next image clicked. Current index: ${this.currentIndex}, Total photos: ${this.photos.length}`
+          );
           const nextIndex = (this.currentIndex + 1) % this.photos.length;
+          console.log(`Moving to index: ${nextIndex}`);
           this.showImage(nextIndex);
         }
 
         previousImage() {
+          console.log(
+            `Previous image clicked. Current index: ${this.currentIndex}, Total photos: ${this.photos.length}`
+          );
           const prevIndex =
             (this.currentIndex - 1 + this.photos.length) % this.photos.length;
+          console.log(`Moving to index: ${prevIndex}`);
           this.showImage(prevIndex);
         }
 
