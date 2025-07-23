@@ -176,20 +176,57 @@ body {
 
   .countdown-only-timer .countdown-display {
     flex-wrap: wrap;
-    gap: 0.8rem;
+    gap: 0.5rem;
+    justify-content: center;
   }
 
   .countdown-only-timer .countdown-item {
-    padding: 1rem 0.8rem;
-    min-width: 70px;
+    padding: 0.8rem 0.6rem;
+    min-width: 60px;
+    flex: 1;
+    max-width: 70px;
   }
 
   .countdown-only-timer .countdown-item span:first-child {
-    font-size: 2rem;
+    font-size: 1.8rem;
+  }
+
+  .countdown-only-timer .countdown-unit {
+    font-size: 0.7rem;
   }
 
   .countdown-only-hearts {
     font-size: 2rem;
+  }
+
+  .countdown-only-title {
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+  }
+}
+
+/* Extra small screens (iPhone SE, etc.) */
+@media (max-width: 375px) {
+  .countdown-only-timer .countdown-display {
+    gap: 0.3rem;
+  }
+
+  .countdown-only-timer .countdown-item {
+    padding: 0.6rem 0.4rem;
+    min-width: 55px;
+    max-width: 65px;
+  }
+
+  .countdown-only-timer .countdown-item span:first-child {
+    font-size: 1.6rem;
+  }
+
+  .countdown-only-timer .countdown-unit {
+    font-size: 0.6rem;
+  }
+
+  .countdown-only-title {
+    font-size: 1.6rem;
   }
 }
 
@@ -733,15 +770,20 @@ body {
   }
 
   .countdown-display {
-    gap: 1rem;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
   }
 
   .countdown-item {
-    min-width: 50px;
+    min-width: 45px;
+    max-width: 60px;
+    padding: 0.8rem 0.5rem;
+    flex: 1;
   }
 
   .countdown-item span:first-child {
-    font-size: 2rem;
+    font-size: 1.8rem;
   }
 
   .countdown-unit {
